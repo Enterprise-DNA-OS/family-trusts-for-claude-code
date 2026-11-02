@@ -53,6 +53,8 @@ export async function getDb() {
     pg.types.setTypeParser(1082, (value) => value);
     // Same for TIMESTAMP (no zone): wall-clock times stay as written, whatever the machine's zone.
     pg.types.setTypeParser(1114, (value) => value);
+    // BIGINT money columns come back as numbers, as they do from PGlite (safe below 2^53 cents).
+    pg.types.setTypeParser(20, (value) => Number(value));
     const pool = new pg.Client({
       connectionString: url,
       ssl: wantsSsl(url) ? { rejectUnauthorized: true } : undefined,

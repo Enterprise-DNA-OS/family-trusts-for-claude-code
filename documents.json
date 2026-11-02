@@ -1,11 +1,44 @@
 [
   {
-    "name": "example",
-    "title": "TODO(author): the first document this industry must produce",
-    "for_each": "select gen_random_uuid() as id, 'Example' as name",
-    "file": "name",
+    "name": "trust-register",
+    "title": "Register of trustees, settlors and beneficiaries",
+    "for_each": "select id, code from trusts where status = 'active' order by code",
+    "file": "code",
     "sections": [
-      { "title": "Details", "sql": "select 'replace me' as item, $1::text as record_id" }
+      { "title": "The trust", "layout": "record", "sql": "select name, jurisdiction, kind, established_on, vests_on, tax_ref, deed_held_at, family_name as client from v_trusts where id = $1" },
+      { "title": "Current", "note": "Trusts Act 2019 s 45(g): documents of appointment, removal and discharge of trustees are core documents.", "sql": "select name, role, from_on from v_register where trust_id = $1 and standing = 'current' order by case role when 'trustee' then 0 when 'settlor' then 1 when 'appointor' then 2 else 3 end, name" },
+      { "title": "Past", "sql": "select name, role, from_on, to_on, docs_passed_on from v_register where trust_id = $1 and standing = 'past' order by to_on" }
+    ]
+  },
+  {
+    "name": "property-schedule",
+    "title": "Schedule of trust property",
+    "for_each": "select id, code from trusts where status = 'active' order by code",
+    "file": "code",
+    "sections": [
+      { "title": "Assets", "note": "Trusts Act 2019 s 45(c): records of the trust property that identify its assets, liabilities, income and expenses.", "sql": "select a.ref, a.description, a.kind, a.acquired_on, (a.cost_cents / 100.0)::numeric(14,2) as cost, (a.value_cents / 100.0)::numeric(14,2) as value, a.valued_on from assets a where a.trust_id = $1 and a.disposed_on is null order by a.ref" },
+      { "title": "Loans", "sql": "select ref, lender, direction, opened_on, (advanced_cents / 100.0)::numeric(14,2) as advanced, (repaid_cents / 100.0)::numeric(14,2) as repaid, (forgiven_cents / 100.0)::numeric(14,2) as forgiven, (balance_cents / 100.0)::numeric(14,2) as balance from v_loans where trust_id = $1 order by ref" }
+    ]
+  },
+  {
+    "name": "distribution-resolution",
+    "title": "Distribution resolution",
+    "for_each": "select id, ref from resolutions where kind = 'distribution' and made_on >= current_date - interval '15 months' order by ref",
+    "file": "ref",
+    "sections": [
+      { "title": "Resolution", "layout": "record", "sql": "select r.ref, t.name as trust, r.income_year, r.made_on, r.summary from resolutions r join trusts t on t.id = r.trust_id where r.id = $1" },
+      { "title": "Beneficiaries", "sql": "select p.name as beneficiary, d.kind, (d.amount_cents / 100.0)::numeric(14,2) as amount, d.share_pct as share_percent from distributions d join people p on p.id = d.person_id where d.resolution_id = $1 order by d.ref" },
+      { "title": "Signed by", "note": "Every trustee in office signs unless the deed allows a majority (Trusts Act 2019 s 38).", "sql": "select p.name as trustee, s.signed_on from resolution_signers s join people p on p.id = s.person_id where s.resolution_id = $1 order by p.name" }
+    ]
+  },
+  {
+    "name": "beneficiary-statement",
+    "title": "Beneficiary statement",
+    "for_each": "select distinct p.id, p.code from distributions d join people p on p.id = d.person_id where d.income_year >= extract(year from current_date)::int - 2 order by p.code",
+    "file": "code",
+    "sections": [
+      { "title": "Beneficiary", "layout": "record", "sql": "select name, address, email from people where id = $1" },
+      { "title": "Distributions", "sql": "select t.name as trust, d.income_year, d.kind, (d.amount_cents / 100.0)::numeric(14,2) as amount, d.share_pct as share_percent, (d.paid_cents / 100.0)::numeric(14,2) as paid, d.paid_on, case when t.jurisdiction = 'NZ' then 'NZD' else 'AUD' end as currency from distributions d join trusts t on t.id = d.trust_id where d.person_id = $1 and d.income_year >= extract(year from current_date)::int - 2 order by d.income_year desc, t.name" }
     ]
   }
 ]

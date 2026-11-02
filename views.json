@@ -2,12 +2,58 @@
   {
     "name": "week",
     "title": "This week",
-    "subtitle": "Family Trusts for Claude Code: what needs attention, rendered by npm run view",
+    "subtitle": "What needs a person: legal and deed deadlines first, then the year end and beneficiary requests",
     "sections": [
       {
         "title": "Needs attention",
-        "note": "TODO(author): point this at the industry's attention view (overdue, stuck, quiet).",
-        "sql": "select 'replace me' as item, 'TODO(author)' as why"
+        "note": "The dated obligations from /attention. Every line names the rule that set it.",
+        "sql": "select trust, item, ref, due_on as due, standing, basis from v_obligations where standing in ('overdue', 'due soon') order by case basis when 'law' then 0 when 'deed' then 1 else 2 end, due_on"
+      },
+      {
+        "title": "Resolutions not signed by every trustee",
+        "sql": "select ref, trust, made_on, kind, signed || ' of ' || trustees_then as signed, unsigned_by from v_resolutions where signed < trustees_then order by made_on desc"
+      },
+      {
+        "title": "Beneficiary requests waiting",
+        "sql": "select q.ref, t.code as trust, p.name as beneficiary, q.received_on, q.asked_for from info_requests q join trusts t on t.id = q.trust_id join people p on p.id = q.person_id where q.answered_on is null order by q.received_on"
+      }
+    ]
+  },
+  {
+    "name": "year-end",
+    "title": "Year end",
+    "subtitle": "Every trust's last finished income year: resolution, distributions and accounts",
+    "sections": [
+      {
+        "title": "Resolutions and accounts",
+        "note": "New Zealand: beneficiary income vested or paid within 6 months of balance date (Income Tax Act 2007 s HC 6). Australia: resolve by 30 June or the deed's earlier date (ITAA 1936 ss 97 and 99A).",
+        "sql": "select t.code as trust, t.jurisdiction, o.income_year, o.item, o.due_on, o.done_on, o.standing from v_obligations o join trusts t on t.id = o.trust_id where o.item in ('beneficiary income allocated', 'distribution resolution', 'financial statements') and o.income_year >= extract(year from current_date)::int - 1 order by t.code, o.income_year desc, o.item"
+      }
+    ]
+  },
+  {
+    "name": "register",
+    "title": "Register of people",
+    "subtitle": "Every current trustee, settlor, appointor and beneficiary, trust by trust",
+    "sections": [
+      {
+        "title": "Current roles",
+        "sql": "select trust, name, role, from_on, age from v_register where standing = 'current' order by trust, case role when 'trustee' then 0 when 'settlor' then 1 when 'appointor' then 2 else 3 end, name"
+      }
+    ]
+  },
+  {
+    "name": "money",
+    "title": "Trust property and loans",
+    "subtitle": "What each trust holds, when it was valued, and what it still owes",
+    "sections": [
+      {
+        "title": "Assets",
+        "sql": "select t.code as trust, a.description, a.kind, (a.value_cents / 100.0)::numeric(14,2) as value, case when t.jurisdiction = 'NZ' then 'NZD' else 'AUD' end as currency, a.valued_on from assets a join trusts t on t.id = a.trust_id where a.disposed_on is null and t.status = 'active' order by t.code, a.value_cents desc nulls last"
+      },
+      {
+        "title": "Loans",
+        "sql": "select trust, lender, direction, (balance_cents / 100.0)::numeric(14,2) as balance, currency, last_forgiven_on from v_loans order by trust"
       }
     ]
   }

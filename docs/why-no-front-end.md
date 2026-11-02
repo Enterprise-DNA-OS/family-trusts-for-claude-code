@@ -13,12 +13,14 @@ That layer used to be the whole product, because talking to a database was hard.
 
 ## What you give up
 
-- **A visual board.** Stages are a table you ask about, not cards you drag.
+- **A document store.** The records say where each deed, variation and set of accounts is held; the files themselves stay in your document system.
+- **A portal for clients and beneficiaries.** Nobody outside the practice signs in. Letters and summaries are drafted for you to send.
+- **A precedent library.** The drafts are short and plain. Your own precedents go in through `/customise`.
 - **A phone app.** It runs where Claude Code runs.
-- **A vendor help desk.** This is open source. Enterprise DNA supports the installed version for businesses that want someone to call.
+- **A vendor help desk.** This is open source. Enterprise DNA supports the installed version for practices that want someone to call.
 
 ## Who this fits
 
-Small teams who already use Claude Code, or who would rather learn to ask than learn another interface. If your team needs a screen to look at all day, keep CCH Trust Manager. If you need the answers more than the screens, this is cheaper, faster and yours.
+Practices that already use Claude Code, or who would rather learn to ask than learn another interface. If your team needs a screen to look at all day, keep CCH Trust Manager. If you need the answers (which trusts are past the six-month window, who was never told they are a beneficiary, which resolution one trustee never signed) more than the screens, this is cheaper, faster and yours.
 
 Installed and run for you: https://enterprisedna.co/omni/instead-of/cch-trust-manager

@@ -1,0 +1,11 @@
+Trust Code,Name,Role,Date Appointed,Date Resigned,Date of Birth,Email
+PAT01,Anil Patel,Trustee,12/03/2011,,14/02/1970,anil.patel@example.co.nz
+PAT01,Meera Patel,Trustee,12/03/2011,,02/09/1972,meera.patel@example.co.nz
+PAT01,Kauri Trustees Limited,Trustee,12/03/2011,30/06/2020,,
+PAT01,Anil Patel,Settlor,12/03/2011,,,
+PAT01,Anil Patel,Discretionary Beneficiary,12/03/2011,,,
+PAT01,Meera Patel,Discretionary Beneficiary,12/03/2011,,,
+PAT01,Rohan Patel,Discretionary Beneficiary,12/03/2011,,21/05/2004,
+RIV02,Meera Patel,Trustee,01/07/2021,,,
+RIV02,Anil Patel,Trustee,01/07/2021,,,
+RIV02,Rohan Patel,Final Beneficiary,01/07/2021,,,
